@@ -16,56 +16,76 @@ $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Vanilla</title>
+    <title>Dashboard - Task Manager</title>
+    <link rel="stylesheet" href="public/css/global.css">
+    <link rel="stylesheet" href="public/css/dashboard.css">
 </head>
 
 <body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <h2>📋 Dashboard</h2>
+            <div class="user-info">
+                <p class="user-welcome">
+                    Welcome, <strong><?= htmlspecialchars($username) ?></strong>!
+                </p>
+                <a href="logout.php" class="btn-logout">Logout</a>
+            </div>
+        </header>
 
-    <h2>Dashboard</h2>
-    <p>Bem-vindo, <strong>
-            <?= htmlspecialchars($username) ?>
-        </strong>!</p>
-    <p><a href="logout.php">Sair</a></p>
+        <!-- Ações -->
+        <div class="dashboard-actions">
+            <a href="add.php" class="btn btn-create">Create New Task</a>
+        </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Completed</th>
-                <th>Created At</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-
-            <?php if (empty($tasks)): ?>
-                <tr>
-                    <td colspan="5">Nenhuma tarefa encontrada.</td>
-                </tr>
-            <?php else: ?>
-                <?php foreach ($tasks as $task): ?>
+        <!-- Tabela de Tarefas -->
+        <div class="table-container">
+            <table>
+                <thead>
                     <tr>
-                        <td><?= htmlspecialchars($task['id']) ?></td>
-                        <td><?= htmlspecialchars($task['title']) ?></td>
-                        <td><?= $task['completed'] ? 'Sim' : 'Não' ?></td>
-                        <td><?= htmlspecialchars($task['created_at']) ?></td>
-                        <td><a href="edit.php?id=<?= $task['id'] ?>">Editar</a></td>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Creation Date</th>
+                        <th>Actions</th>
                     </tr>
-                <?php endforeach; ?>
-            <?php endif; ?>
-
-
-        </tbody>
-    </table>
-
-    <a href="add.php" class="btn btn-create">Criar Novo Registro</a>
-
+                </thead>
+                <tbody>
+                    <?php if (empty($tasks)): ?>
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                <div class="empty-state-icon">📝</div>
+                                <p>No tasks found.</p>
+                                <p style="font-size: 14px;">Start by creating your first task!</p>
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($tasks as $task): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($task['id']) ?></td>
+                                <td><?= htmlspecialchars($task['title']) ?></td>
+                                <td>
+                                    <span class="status-badge <?= $task['completed'] ? 'status-completed' : 'status-pending' ?>">
+                                        <?= $task['completed'] ? '✓ Completed' : '⏳ Pending' ?>
+                                    </span>
+                                </td>
+                                <td><?= date('d/m/Y H:i', strtotime($task['created_at'])) ?></td>
+                                <td>
+                                    <a href="edit.php?id=<?= $task['id'] ?>" class="btn-edit">Edit</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </body>
 
 </html>

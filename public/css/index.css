@@ -1,0 +1,92 @@
+/* CSS específico da página de login */
+body {
+  background: var(--primary-gradient);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-md);
+}
+
+.login-container {
+  background: white;
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 400px;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+h2 {
+  color: var(--text-dark);
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+  font-size: 28px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+input[type="text"],
+input[type="password"] {
+  margin-bottom: var(--spacing-md);
+}
+
+input[type="submit"] {
+  background: var(--primary-gradient);
+  color: white;
+  margin-bottom: 15px;
+  padding: var(--spacing-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+input[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-register {
+  background: white;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  display: block;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-register:hover {
+  background: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.register-text {
+  text-align: center;
+  margin-top: var(--spacing-sm);
+  color: var(--text-light);
+  font-size: 14px;
+}
