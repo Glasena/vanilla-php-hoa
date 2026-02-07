@@ -1,7 +1,15 @@
 <?php
 
+// Configurações do banco de dados a partir de variáveis de ambiente
+$dbHost = getenv('DB_HOST') ?: 'localhost';
+$dbPort = getenv('DB_PORT') ?: '5432';
+$dbName = getenv('DB_NAME') ?: 'vanilla';
+$dbUser = getenv('DB_USER') ?: 'postgres';
+$dbPassword = getenv('DB_PASSWORD') ?: 'postgres';
+
 try {
-    $pdo = new PDO('pgsql:host=localhost;dbname=vanilla', 'postgres', 'postgres');
+    $dsn = "pgsql:host={$dbHost};port={$dbPort};dbname={$dbName}";
+    $pdo = new PDO($dsn, $dbUser, $dbPassword);
 } catch (\Throwable $th) {
     error_log('Database connection failed: ' . $th->getMessage());
     die('Database connection error. Please contact support.');
