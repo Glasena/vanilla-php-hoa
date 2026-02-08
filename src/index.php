@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <input type="submit" value="Login" />
     </form>
 
-    <a href="add.php" class="btn-register">Register New User</a>
+    <a href="register.php" class="btn-register">Register New User</a>
 
     <p class="register-text">Don't have an account? Register above!</p>
   </div>

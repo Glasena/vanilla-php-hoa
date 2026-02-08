@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Nginx Web Server
@@ -8,7 +8,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - .:/var/www/html
+      - ./src:/var/www/html
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - php
@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     container_name: vanilla_php
     volumes:
-      - .:/var/www/html
+      - ./src:/var/www/html
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
@@ -44,7 +44,7 @@ services:
     image: postgres:16-alpine
     container_name: vanilla_postgres
     ports:
-      - "5432:5432"
+      - "5434:5432"
     environment:
       - POSTGRES_DB=${DB_NAME:-vanilla}
       - POSTGRES_USER=${DB_USER:-postgres}
