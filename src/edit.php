@@ -18,9 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (strlen($title) > 255) {
         $error = 'Título muito longo (máx 255 caracteres)';
     } else {
-        $stmt = $pdo->prepare('UPDATE tasks SET title = :title, completed = :completed 
-WHERE id = :taskId AND user_id = :userId');
-
+        $stmt = $pdo->prepare('
+            UPDATE tasks SET title = :title, completed = :completed 
+            WHERE id = :taskId AND user_id = :userId');
         try {
             $stmt->execute([
                 'userId' => $_SESSION['user_id'],
@@ -39,9 +39,6 @@ WHERE id = :taskId AND user_id = :userId');
     $stmt = $pdo->prepare('SELECT id, title, completed, created_at FROM tasks WHERE user_id = :userId and title = :title');
     $stmt->execute(['userId' => $userId, 'title' => $title]);
     $task = $stmt->fetch(PDO::FETCH_ASSOC);
-
-
-
 }
 ?>
 <!DOCTYPE html>
