@@ -1,4 +1,4 @@
-/* Dashboard específico */
+/* Dashboard */
 body {
   background: var(--bg-light);
   min-height: 100vh;
@@ -11,7 +11,7 @@ body {
   padding: var(--spacing-md);
 }
 
-/* Header do Dashboard */
+/* Header */
 .dashboard-header {
   background: white;
   padding: var(--spacing-lg);
@@ -67,7 +67,7 @@ body {
   transform: translateY(-2px);
 }
 
-/* Seção de ações */
+/* Actions */
 .dashboard-actions {
   margin-bottom: var(--spacing-lg);
   display: flex;
@@ -98,7 +98,7 @@ body {
   font-weight: bold;
 }
 
-/* Tabela de tarefas */
+/* Tabela de propriedades */
 .table-container {
   background: white;
   border-radius: var(--radius-md);
@@ -148,8 +148,9 @@ tbody td:first-child {
   color: var(--primary-color);
 }
 
-/* Status da tarefa */
-.status-badge {
+/* Badges */
+.status-badge,
+.type-badge {
   display: inline-block;
   padding: 4px 12px;
   border-radius: 12px;
@@ -158,17 +159,37 @@ tbody td:first-child {
   text-transform: uppercase;
 }
 
-.status-completed {
+.status-active {
   background: #d4edda;
   color: #155724;
 }
 
-.status-pending {
+.status-inactive {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.type-house {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.type-lot {
   background: #fff3cd;
   color: #856404;
 }
 
-/* Link de editar */
+.type-apartment {
+  background: #e2e3f1;
+  color: #383d6e;
+}
+
+/* Action buttons */
+.actions-cell {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
 .btn-edit {
   color: var(--primary-color);
   text-decoration: none;
@@ -186,7 +207,24 @@ tbody td:first-child {
   transform: translateY(-1px);
 }
 
-/* Mensagem de tabela vazia */
+.btn-delete {
+  color: var(--danger-color);
+  text-decoration: none;
+  font-weight: 600;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--danger-color);
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.btn-delete:hover {
+  background: var(--danger-color);
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Empty state */
 .empty-state {
   text-align: center;
   padding: var(--spacing-xl) var(--spacing-md);
@@ -204,7 +242,30 @@ tbody td:first-child {
   opacity: 0.3;
 }
 
-/* Responsivo */
+/* Form styles */
+.form-container {
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-lg);
+}
+
+.form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.form-group input[type="text"],
+.form-group select {
+  width: 100%;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .dashboard-header {
     flex-direction: column;
@@ -220,7 +281,7 @@ tbody td:first-child {
   }
 
   table {
-    min-width: 600px;
+    min-width: 700px;
   }
 
   thead th {
@@ -231,5 +292,9 @@ tbody td:first-child {
   tbody td {
     padding: var(--spacing-sm);
     font-size: 14px;
+  }
+
+  .actions-cell {
+    flex-direction: column;
   }
 }

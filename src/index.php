@@ -2,13 +2,13 @@
 session_start();
 require 'config/database.php';
 
-// Se já tá logado, redireciona
+// If already logged in, redirect
 if (isset($_SESSION['user_id'])) {
   header('Location: dashboard.php');
   exit;
 }
 
-// Processa o login quando formulário for submetido
+// Process login when form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $username = $_POST['username'] ?? '';
   $password = $_POST['password'] ?? '';
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - Task Manager</title>
+  <title>Login - HOA Manager</title>
   <link rel="stylesheet" href="public/css/global.css" />
   <link rel="stylesheet" href="public/css/index.css" />
 </head>

@@ -1,6 +1,6 @@
 <?php
 
-// Configurações do banco de dados a partir de variáveis de ambiente
+// Database configuration from environment variables
 $dbHost = getenv('DB_HOST') ?: 'localhost';
 $dbPort = getenv('DB_PORT') ?: '5432';
 $dbName = getenv('DB_NAME') ?: 'vanilla';
@@ -25,11 +25,14 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )");
 
-$pdo->exec("CREATE TABLE IF NOT EXISTS tasks (
+$pdo->exec("CREATE TABLE IF NOT EXISTS properties (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    title VARCHAR(255) NOT NULL,
-    completed BOOLEAN DEFAULT FALSE,
+    lot_number VARCHAR(20) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    area_sqm DECIMAL(10,2),
+    property_type VARCHAR(50) DEFAULT 'house',
+    status VARCHAR(20) DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )");
 
