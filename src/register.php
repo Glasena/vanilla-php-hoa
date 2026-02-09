@@ -5,7 +5,7 @@ require 'config/database.php';
 
 // Se já tá logado, redireciona
 if (isset($_SESSION['user_id'])) {
-    header('Location: dashboard.php');
+    header('Location: associations.php');
     exit;
 }
 
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $id = $pdo->lastInsertId();
                 $_SESSION['user_id'] = $id;
                 $_SESSION['username'] = $username;
-                header('Location: dashboard.php');
+                header('Location: associations.php');
             } catch (\Throwable $th) {
                 error_log('Registration error: ' . $th->getMessage());
                 $error = 'Registration failed. Please try again.';

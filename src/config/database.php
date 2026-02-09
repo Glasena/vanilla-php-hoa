@@ -25,9 +25,28 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )");
 
+$pdo->exec("CREATE TABLE IF NOT EXISTS associations (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    address VARCHAR(255),
+    description TEXT,
+    created_by INT REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)");
+
+$pdo->exec("CREATE TABLE IF NOT EXISTS association_members (
+    id SERIAL PRIMARY KEY,
+    association_id INT REFERENCES associations(id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    role VARCHAR(20) NOT NULL DEFAULT 'homeowner',
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(association_id, user_id)
+)");
+
 $pdo->exec("CREATE TABLE IF NOT EXISTS properties (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    association_id INT REFERENCES associations(id) ON DELETE CASCADE,
     lot_number VARCHAR(20) NOT NULL,
     address VARCHAR(255) NOT NULL,
     area_sqm DECIMAL(10,2),
@@ -35,6 +54,17 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS properties (
     status VARCHAR(20) DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )");
+
+// Add association_id column to properties if it doesn't exist (for existing databases)
+$pdo->exec("DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'properties' AND column_name = 'association_id'
+    ) THEN
+        ALTER TABLE properties ADD COLUMN association_id INT REFERENCES associations(id) ON DELETE CASCADE;
+    END IF;
+END $$");
 
 $stmt = $pdo->prepare("INSERT INTO users (username, password) 
     VALUES (:username, :password) 

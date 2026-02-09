@@ -4,7 +4,7 @@ require 'config/database.php';
 
 // If already logged in, redirect
 if (isset($_SESSION['user_id'])) {
-  header('Location: dashboard.php');
+  header('Location: associations.php');
   exit;
 }
 
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     session_regenerate_id(true);
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['username'] = $user['username'];
-    header('Location: dashboard.php');
+    header('Location: associations.php');
     exit;
   } else {
     $error = 'Invalid username or password.';

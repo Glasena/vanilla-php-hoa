@@ -9,11 +9,26 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = $_SESSION['user_id'];
 $propertyId = $_GET['id'] ?? null;
+$associationId = $_GET['association_id'] ?? null;
 
-if ($propertyId) {
-    $stmt = $pdo->prepare('DELETE FROM properties WHERE id = :propertyId AND user_id = :userId');
-    $stmt->execute(['propertyId' => $propertyId, 'userId' => $userId]);
+if (!$propertyId || !$associationId) {
+    header('Location: associations.php');
+    exit;
 }
 
-header('Location: dashboard.php');
+// Check membership - only admin and board_member can delete
+$stmt = $pdo->prepare('
+    SELECT am.role
+    FROM association_members am
+    WHERE am.association_id = :associationId AND am.user_id = :userId
+');
+$stmt->execute(['associationId' => $associationId, 'userId' => $userId]);
+$membership = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if ($membership && in_array($membership['role'], ['admin', 'board_member'])) {
+    $stmt = $pdo->prepare('DELETE FROM properties WHERE id = :propertyId AND association_id = :associationId');
+    $stmt->execute(['propertyId' => $propertyId, 'associationId' => $associationId]);
+}
+
+header('Location: association_dashboard.php?id=' . $associationId);
 exit;

@@ -7,6 +7,29 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+$userId = $_SESSION['user_id'];
+$associationId = $_GET['association_id'] ?? $_POST['association_id'] ?? null;
+
+if (!$associationId) {
+    header('Location: associations.php');
+    exit;
+}
+
+// Check membership and permissions
+$stmt = $pdo->prepare('
+    SELECT am.role, a.name
+    FROM association_members am
+    INNER JOIN associations a ON a.id = am.association_id
+    WHERE am.association_id = :associationId AND am.user_id = :userId
+');
+$stmt->execute(['associationId' => $associationId, 'userId' => $userId]);
+$membership = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$membership || !in_array($membership['role'], ['admin', 'board_member'])) {
+    header('Location: associations.php');
+    exit;
+}
+
 $error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -28,19 +51,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!in_array($propertyType, ['house', 'lot', 'apartment'])) {
         $error = 'Invalid property type.';
     } else {
-        $stmt = $pdo->prepare('INSERT INTO properties (user_id, lot_number, address, area_sqm, property_type)
-                               VALUES (:userId, :lotNumber, :address, :areaSqm, :propertyType)');
+        $stmt = $pdo->prepare('INSERT INTO properties (user_id, association_id, lot_number, address, area_sqm, property_type)
+                               VALUES (:userId, :associationId, :lotNumber, :address, :areaSqm, :propertyType)');
 
         try {
             $stmt->execute([
-                'userId' => $_SESSION['user_id'],
+                'userId' => $userId,
+                'associationId' => $associationId,
                 'lotNumber' => $lotNumber,
                 'address' => $address,
                 'areaSqm' => $areaSqm !== '' ? $areaSqm : null,
                 'propertyType' => $propertyType,
             ]);
 
-            header('Location: dashboard.php');
+            header('Location: association_dashboard.php?id=' . $associationId);
             exit;
         } catch (\Throwable $th) {
             error_log($th->getMessage());
@@ -55,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Property - HOA Manager</title>
+    <title>Add Property - <?= htmlspecialchars($membership['name']) ?></title>
     <link rel="stylesheet" href="public/css/global.css">
     <link rel="stylesheet" href="public/css/dashboard.css">
 </head>
@@ -65,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <header class="dashboard-header">
             <h2>New Property</h2>
             <div class="user-info">
-                <a href="dashboard.php" class="btn btn-outline">Back</a>
+                <a href="association_dashboard.php?id=<?= $associationId ?>" class="btn btn-outline">Back</a>
             </div>
         </header>
 
@@ -75,6 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST">
+                <input type="hidden" name="association_id" value="<?= htmlspecialchars($associationId) ?>">
+
                 <div class="form-group">
                     <label for="lot_number">Lot Number:</label>
                     <input type="text" name="lot_number" id="lot_number" required
@@ -107,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save</button>
-                    <a href="dashboard.php" class="btn btn-outline">Cancel</a>
+                    <a href="association_dashboard.php?id=<?= $associationId ?>" class="btn btn-outline">Cancel</a>
                 </div>
             </form>
         </div>

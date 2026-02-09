@@ -8,10 +8,35 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $userId = $_SESSION['user_id'];
-$propertyId = $_GET['id'] ?? null;
+$propertyId = $_GET['id'] ?? $_POST['property_id'] ?? null;
+$associationId = $_GET['association_id'] ?? $_POST['association_id'] ?? null;
 
-if (!$propertyId) {
-    header('Location: dashboard.php');
+if (!$propertyId || !$associationId) {
+    header('Location: associations.php');
+    exit;
+}
+
+// Check membership and get role
+$stmt = $pdo->prepare('
+    SELECT am.role, a.name
+    FROM association_members am
+    INNER JOIN associations a ON a.id = am.association_id
+    WHERE am.association_id = :associationId AND am.user_id = :userId
+');
+$stmt->execute(['associationId' => $associationId, 'userId' => $userId]);
+$membership = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$membership) {
+    header('Location: associations.php');
+    exit;
+}
+
+$userRole = $membership['role'];
+$canManage = in_array($userRole, ['admin', 'board_member']);
+
+// Residents cannot edit
+if ($userRole === 'resident') {
+    header('Location: association_dashboard.php?id=' . $associationId);
     exit;
 }
 
@@ -40,23 +65,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!in_array($status, ['active', 'inactive'])) {
         $error = 'Invalid status.';
     } else {
-        $stmt = $pdo->prepare('UPDATE properties
-                               SET lot_number = :lotNumber, address = :address, area_sqm = :areaSqm,
-                                   property_type = :propertyType, status = :status
-                               WHERE id = :propertyId AND user_id = :userId');
-
-        try {
-            $stmt->execute([
+        // Build WHERE clause based on permissions
+        if ($canManage) {
+            $sql = 'UPDATE properties
+                    SET lot_number = :lotNumber, address = :address, area_sqm = :areaSqm,
+                        property_type = :propertyType, status = :status
+                    WHERE id = :propertyId AND association_id = :associationId';
+            $params = [
                 'lotNumber' => $lotNumber,
                 'address' => $address,
                 'areaSqm' => $areaSqm !== '' ? $areaSqm : null,
                 'propertyType' => $propertyType,
                 'status' => $status,
                 'propertyId' => $propertyId,
+                'associationId' => $associationId,
+            ];
+        } else {
+            // Homeowner can only edit their own
+            $sql = 'UPDATE properties
+                    SET lot_number = :lotNumber, address = :address, area_sqm = :areaSqm,
+                        property_type = :propertyType, status = :status
+                    WHERE id = :propertyId AND association_id = :associationId AND user_id = :userId';
+            $params = [
+                'lotNumber' => $lotNumber,
+                'address' => $address,
+                'areaSqm' => $areaSqm !== '' ? $areaSqm : null,
+                'propertyType' => $propertyType,
+                'status' => $status,
+                'propertyId' => $propertyId,
+                'associationId' => $associationId,
                 'userId' => $userId,
-            ]);
+            ];
+        }
 
-            header('Location: dashboard.php');
+        $stmt = $pdo->prepare($sql);
+
+        try {
+            $stmt->execute($params);
+            header('Location: association_dashboard.php?id=' . $associationId);
             exit;
         } catch (\Throwable $th) {
             error_log($th->getMessage());
@@ -73,12 +119,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'status' => $status,
     ];
 } else {
-    $stmt = $pdo->prepare('SELECT id, lot_number, address, area_sqm, property_type, status FROM properties WHERE id = :propertyId AND user_id = :userId');
-    $stmt->execute(['propertyId' => $propertyId, 'userId' => $userId]);
+    // Load property - check permissions
+    if ($canManage) {
+        $stmt = $pdo->prepare('SELECT id, lot_number, address, area_sqm, property_type, status, user_id
+                               FROM properties WHERE id = :propertyId AND association_id = :associationId');
+        $stmt->execute(['propertyId' => $propertyId, 'associationId' => $associationId]);
+    } else {
+        // Homeowner can only edit their own
+        $stmt = $pdo->prepare('SELECT id, lot_number, address, area_sqm, property_type, status, user_id
+                               FROM properties WHERE id = :propertyId AND association_id = :associationId AND user_id = :userId');
+        $stmt->execute(['propertyId' => $propertyId, 'associationId' => $associationId, 'userId' => $userId]);
+    }
+
     $property = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$property) {
-        header('Location: dashboard.php');
+        header('Location: association_dashboard.php?id=' . $associationId);
         exit;
     }
 }
@@ -89,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Property - HOA Manager</title>
+    <title>Edit Property - <?= htmlspecialchars($membership['name']) ?></title>
     <link rel="stylesheet" href="public/css/global.css">
     <link rel="stylesheet" href="public/css/dashboard.css">
 </head>
@@ -99,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <header class="dashboard-header">
             <h2>Edit Property</h2>
             <div class="user-info">
-                <a href="dashboard.php" class="btn btn-outline">Back</a>
+                <a href="association_dashboard.php?id=<?= $associationId ?>" class="btn btn-outline">Back</a>
             </div>
         </header>
 
@@ -109,6 +165,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST">
+                <input type="hidden" name="property_id" value="<?= htmlspecialchars($propertyId) ?>">
+                <input type="hidden" name="association_id" value="<?= htmlspecialchars($associationId) ?>">
+
                 <div class="form-group">
                     <label for="lot_number">Lot Number:</label>
                     <input type="text" name="lot_number" id="lot_number" required
@@ -149,7 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save</button>
-                    <a href="dashboard.php" class="btn btn-outline">Cancel</a>
+                    <a href="association_dashboard.php?id=<?= $associationId ?>" class="btn btn-outline">Cancel</a>
                 </div>
             </form>
         </div>
